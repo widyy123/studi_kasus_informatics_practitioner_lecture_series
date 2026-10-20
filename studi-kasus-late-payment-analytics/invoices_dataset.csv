@@ -1,0 +1,4 @@
+invoice_id;customer_id;customer_segment;invoice_amount;payment_method;historical_late_count;late_payment_flag
+INV001;CUST101;SMB;5000000;Bank Transfer;2;1
+INV002;CUST102;Enterprise;15000000;Credit Card;0;0
+INV003;CUST103;Retail;1200000;Cash;4;1

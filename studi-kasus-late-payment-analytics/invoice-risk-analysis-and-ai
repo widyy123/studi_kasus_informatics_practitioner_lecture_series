@@ -1,0 +1,105 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOH58KeCdqL9dBx6UWwp5SP",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/widyy123/studi-kasus-late-payment-analytics/blob/main/invoice-risk-analysis-and-ai\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 6,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "dy1u7GQ0nh-V",
+        "outputId": "b35215e1-8571-408a-df61-3d912ecb0724"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Daftar kolom yang terdeteksi: ['invoice_id', 'customer_id', 'customer_segment', 'invoice_amount', 'payment_method', 'historical_late_count', 'late_payment_flag']\n",
+            "\n",
+            "=== HASIL EVALUASI MODEL MACHINE LEARNING ===\n",
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           1       1.00      1.00      1.00         1\n",
+            "\n",
+            "    accuracy                           1.00         1\n",
+            "   macro avg       1.00      1.00      1.00         1\n",
+            "weighted avg       1.00      1.00      1.00         1\n",
+            "\n"
+          ]
+        }
+      ],
+      "source": [
+        "import os\n",
+        "import pandas as pd\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.preprocessing import OneHotEncoder\n",
+        "from sklearn.compose import ColumnTransformer\n",
+        "from sklearn.ensemble import RandomForestClassifier\n",
+        "from sklearn.metrics import classification_report\n",
+        "\n",
+        "# 1. Cek lokasi file CSV\n",
+        "file_name = 'invoices_dataset.csv'\n",
+        "file_path = f'/{file_name}' if os.path.exists(f'/{file_name}') else file_name\n",
+        "\n",
+        "# Baca CSV dengan sep=None untuk otomatis mendeteksi pemisah (koma atau titik koma)\n",
+        "df = pd.read_csv(file_path, sep=None, engine='python')\n",
+        "\n",
+        "# Bersihkan nama kolom dari spasi berlebih di awal/akhir\n",
+        "df.columns = df.columns.str.strip()\n",
+        "\n",
+        "print(\"Daftar kolom yang terdeteksi:\", df.columns.tolist())\n",
+        "\n",
+        "# 2. Tentukan fitur & target\n",
+        "X = df[['customer_segment', 'invoice_amount', 'payment_method', 'historical_late_count']]\n",
+        "y = df['late_payment_flag']\n",
+        "\n",
+        "# 3. Preprocessing (mengubah teks kategorikal menjadi angka)\n",
+        "preprocessor = ColumnTransformer(\n",
+        "    transformers=[\n",
+        "        ('cat', OneHotEncoder(handle_unknown='ignore'), ['customer_segment', 'payment_method'])\n",
+        "    ], remainder='passthrough')\n",
+        "\n",
+        "X_processed = preprocessor.fit_transform(X)\n",
+        "\n",
+        "# 4. Split data Train (80%) dan Test (20%)\n",
+        "X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42)\n",
+        "\n",
+        "# 5. Training Model Random Forest\n",
+        "model = RandomForestClassifier(random_state=42)\n",
+        "model.fit(X_train, y_train)\n",
+        "\n",
+        "# 6. Tampilkan Hasil Evaluasi Model\n",
+        "y_pred = model.predict(X_test)\n",
+        "print(\"\\n=== HASIL EVALUASI MODEL MACHINE LEARNING ===\")\n",
+        "print(classification_report(y_test, y_pred))"
+      ]
+    }
+  ]
+}
